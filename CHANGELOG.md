@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.1
+
+* **Fixed:** `find_nsenter()` — replaced `command -v nsenter` with physical path probing (`/system/bin`, `/usr/bin`, `/bin`). Previous approach returned a bare name on some ROMs causing `[ -x ]` check to fail even when nsenter existed
+* **Fixed:** `ls | head` anti-pattern in `copy_selinux_context()` replaced with `for` loop — safer with special characters in filenames
+* **Fixed:** missing `mkdir -p` in fallback cert copy path in `service.sh`
+* **Improved:** collision logging in `post-fs-data.sh` — when a user cert replaces a system cert with the same filename, it is now logged explicitly
+
 ## v2.0
 
 * **Fixed critical bug:** `monitor_zygote` was checking undefined `$pid` instead of `$zp` when testing whether a bind-mount was already present — causing injection to be skipped or applied incorrectly
