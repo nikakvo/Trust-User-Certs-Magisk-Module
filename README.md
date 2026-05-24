@@ -69,6 +69,8 @@ Check the log for any `FAILED` injection entries. A small number of `FAILED` lin
 **Module log not found:**
 Verify the module ID with `su -c ls /data/adb/modules/` and adjust the path accordingly.
 
+Note: On Android 14+ (conscrypt path), the module requires nsenter to be present on the device. If your device is missing it, check the log for details.
+
 ## Credits
 
 Originally based on [AlwaysTrustUserCerts](https://github.com/NVISOsecurity/AlwaysTrustUserCerts) by Jeroen Beckers (NVISO).
