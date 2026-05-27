@@ -1,5 +1,24 @@
 # Changelog
 
+## v2.2
+
+### Added
+- **Manual certificate push via `/data/local/tmp/cert/`**
+  Certificates placed in this directory are automatically merged into the
+  system trust store on every boot — no Android Settings required. The
+  directory is created on first boot with `chmod 777`, making it writable
+  from Termux without root. Files must follow the Android cert naming
+  convention: `<subject_hash_old>.0`.
+
+- **Automatic conflict cleanup for intermediate CA certificates**
+  Known conflicting intermediate CA certificates are now detected and
+  removed from the merged store during both the early-boot phase
+  (`post-fs-data.sh`) and the APEX injection phase (`service.sh`).
+  Removal is done by filename hash pattern and by certificate content
+  string, so renamed copies are also caught. This prevents broken SSL
+  interception caused by certificate chain resolution through an
+  unintended issuer.
+
 ## v2.1
 
 * **Fixed:** `find_nsenter()` — replaced `command -v nsenter` with physical path probing (`/system/bin`, `/usr/bin`, `/bin`). Previous approach returned a bare name on some ROMs causing `[ -x ]` check to fail even when nsenter existed
