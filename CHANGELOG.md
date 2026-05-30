@@ -1,5 +1,18 @@
 # Changelog
 
+## v2.3
+- **Live sync**: inotifyd watcher on all user cert directories — add/remove certs without reboot
+- **Polling fallback**: 30s polling when inotifyd unavailable (graceful degradation)
+- **Structured logging**: separate boot.log and service.log under `/data/adb/trust-user-certs/logs/`
+  - Each line includes timestamp, level, PID, and mount namespace ID
+  - Log rotation: keeps last 200 lines (boot.log) / 500 lines (service.log) from previous session
+- **Config file**: `/data/adb/trust-user-certs/config` — control LOG_LEVEL, LIVE_SYNC, AUTO_REPAIR, INJECT_DELAY, MULTI_USER
+- **Fail-safe bootloop protection**: tracks consecutive failed boots, auto-disables module after 3 failures
+- **Bundled inotifyd** (arm64): module ships own binary as fallback if system lacks it
+- **customize.sh**: creates config directory and default config on first install
+- **INJECT_DELAY** config option: adds delay before each nsenter call for devices where processes die mid-inject
+
+
 ## v2.2
 
 ### Added
