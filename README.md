@@ -59,7 +59,7 @@ On Android 14+ with APEX path, the cert is picked up by the live sync watcher �
 
 ## Manual Cert Push
 
-You can push a certificate directly without going through Android Settings:
+Push a certificate directly without going through Android Settings:
 
 ```sh
 # Compute the Android hash name
@@ -69,7 +69,7 @@ HASH=$(openssl x509 -inform PEM -subject_hash_old -in yourcert.pem | head -1)
 cp yourcert.pem /data/local/tmp/cert/${HASH}.0
 ```
 
-The directory `/data/local/tmp/cert/` is created automatically on first boot with `chmod 777` — writable from Termux without root. Certs placed here are merged into the trust store on every boot and live sync cycle.
+The directory `/data/local/tmp/cert/` is created automatically on first boot with `chmod 777` — writable from Termux without root. Certs placed here are merged on every boot and live sync cycle.
 
 ---
 
@@ -98,7 +98,31 @@ su -c cat /data/adb/trust-user-certs/logs/service.log
 su -c cat /data/adb/modules/trustusercerts/log.txt
 ```
 
-Each line in the structured logs includes timestamp, level (`INFO`/`WARN`/`ERROR`/`DEBUG`), PID, and mount namespace ID. Logs auto-rotate — `boot.log` keeps the last 200 lines, `service.log` keeps the last 500 lines.
+Each line includes timestamp, level (`INFO`/`WARN`/`ERROR`/`DEBUG`), PID, and mount namespace ID. Logs auto-rotate — `boot.log` keeps the last 200 lines, `service.log` keeps the last 500 lines.
+
+---
+
+## Full SSL Intercept — Pairing with JustTrustMePro
+
+Trust User Certs promotes your proxy CA to the system trust store, which is sufficient for most apps. However, some apps implement **SSL pinning** — they validate the server certificate against a hardcoded list and ignore the system store entirely.
+
+For those apps, pair this module with **[JustTrustMePro](https://github.com/hang666/JustTrustMePro)** — an LSPosed module that hooks SSL validation methods at runtime and bypasses hardcoded certificate pinning.
+
+| | Trust User Certs | JustTrustMePro |
+|---|---|---|
+| What it does | Promotes proxy CA to system store | Bypasses hardcoded cert pinning |
+| How | Mount namespace injection | LSPosed Java runtime hooks |
+| Needed for | Most apps | Banking apps, TikTok, etc. |
+
+**Setup:**
+1. Flash Trust User Certs → reboot
+2. Install proxy CA via Settings (live sync picks it up instantly)
+3. Install [JustTrustMePro APK](https://github.com/hang666/JustTrustMePro/releases)
+4. Enable it in LSPosed Manager — select only target apps
+5. Reboot once for LSPosed hooks to activate
+6. Start your proxy — full SSL interception on all selected apps
+
+> **Tip:** Enable JustTrustMePro only for the apps you are testing, not system-wide.
 
 ---
 
