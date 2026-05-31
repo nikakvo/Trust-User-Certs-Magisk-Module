@@ -1,5 +1,51 @@
 # Changelog
 
+## v2.4
+
+### Fixed
+
+- **Fail-safe bootloop protection now works correctly.**
+  Previously `mark_boot_success` was called at the end of `post-fs-data.sh`, resetting the counter on every boot regardless of whether the injection succeeded — meaning the counter could never reach 3. The reset is now done in `service.sh` only after a successful `inject_zygote64()`, i.e. a real healthy boot.
+
+- **Mount validation is now accurate.**
+  `has_mount()` previously used `grep` to search for the source path in `mountinfo`, which never matched — the source path does not appear as plain text in that file. Replaced with `awk '$5==p'` which checks field 5 (the mountpoint) directly, as per the `mountinfo` format spec.
+
+- **tmpfs double-mount on service restart no longer crashes.**
+  If `service.sh` was restarted for any reason (manual trigger, live-sync bug, Magisk service restart), the unconditional `mount -t tmpfs` would fail. Now guarded with a `/proc/mounts` check — mounts only if not already mounted.
+
+- **`compute_cert_hash()` no longer returns a false hash on empty cert store.**
+  `md5sum` on empty input returns `d41d8cd98f00b204e9800998ecf8427e`, not an empty string, so the previous `[ -z ]` guard was dead code. The function now checks whether `find` produced any output before passing to `md5sum`, and returns the literal string `"empty"` when no certs are present.
+
+- **`compute_cert_hash()` is now safe for filenames containing spaces.**
+  The previous `xargs stat` implementation would break on cert filenames with spaces (rare but valid). Replaced with `-exec stat {} +` which passes filenames directly to `stat` without shell word splitting.
+
+- **Status reporting no longer counts non-cert files.**
+  All `ls | wc -l` calls replaced with `find -name "*.0" | wc -l` throughout `service.sh` and `post-fs-data.sh`.
+
+- **`local` keyword removed from loops and subshells.**
+  Some KernelSU environments handle `local` unexpectedly outside strict function scope. All variables promoted to plain assignments declared at function entry.
+
+### Changed
+
+- **32-bit zygote injection removed.**
+  `zygote` (32-bit) is no longer injected or monitored. On 64-bit only devices it runs as a compatibility layer, restarts frequently, and was the sole cause of the constant `WARN: zygote has 1 children, waiting` noise in logs. All injection and monitoring is now `zygote64`-only.
+
+- **Live sync upgraded from `inotifyd` to `inotifywait`.**
+  `inotifywait` is now the primary live sync backend. It blocks on events directly in the loop — no external handler script needed. Falls back to `inotifyd`, then 30s polling. A bundled `inotifywait` arm64 binary is included so no Termux or system package is required.
+
+- **Checksum cache — unnecessary re-injections eliminated.**
+  A hash of the cert store state (filename + size + mtime via `-exec stat {} +`) is saved after every sync. On `inotifywait` events, `inotifyd` triggers, and polling cycles, a full `sync_certs_to_tmpfs` + `inject_zygote64` is only performed if the hash has actually changed.
+
+- **Zygote PID cache in monitor loop.**
+  `monitor_zygote64()` tracks the last known `zygote64` PID. If the PID is unchanged on a 5-second cycle, only a quick mount check is performed. A full re-injection is triggered only on a new PID — an actual restart.
+
+- **`find -exec rm` instead of `rm -rf dir/*` for cert cleanup.**
+  Overlay and tmpfs directories are cleared with `find -maxdepth 1 -name "*.0" -exec rm -f {} +`, touching only cert files and leaving any other directory content intact.
+
+- **`uninstall.sh` updated.**
+  Now unmounts only `zygote64` namespaces (matching injection scope). Cleans up runtime files on uninstall: `cert_store.hash`, `cert_sync_handler.sh`, `moddir`, `boot_fail_count`.
+
+
 ## v2.3
 - **Live sync**: inotifyd watcher on all user cert directories — add/remove certs without reboot
 - **Polling fallback**: 30s polling when inotifyd unavailable (graceful degradation)
