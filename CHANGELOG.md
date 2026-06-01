@@ -1,5 +1,17 @@
 # Changelog
 
+№№ v2.5
+Added
+
+Web UI control panel — built-in interface accessible directly from SukiSU Ultra / KernelSU module manager. Shows real-time module status, cert counts, and fail counter without needing a terminal.
+Settings toggles — LIVE_SYNC, MULTI_USER, AUTO_REPAIR, and LOG_LEVEL can now be changed directly from the UI. Changes write to the config file instantly.
+Action buttons — Force Sync (re-builds cert store + re-injects), Inject (re-applies bind-mounts to live namespaces), and Reset Fail Counter available with one tap.
+Live log viewer — last 120 lines of service.log with INFO / WARN / ERR / DEBUG filters and color-coded output. No terminal needed to debug cert issues.
+
+Changed
+
+Status detection now checks /proc/mounts and the APEX cert count directly instead of parsing module.prop. Status is always accurate — no more UNKNOWN state on first load.
+
 ## v2.4
 
 ### Fixed
