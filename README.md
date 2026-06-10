@@ -23,7 +23,7 @@ Two injection paths are handled automatically:
 - Works on Android 7 through 16
 - Supports SukiSU, KernelSU, KernelSU Next and Magisk
 - **Live sync** — re-injects certs without reboot when you add/remove a user cert
-  - Uses bundled `inotifywait` (arm64) → `inotifyd` fallback → 30s polling fallback
+- Uses bundled `inotifywait` (arm64) → `inotifyd` fallback → 30s polling fallback
 - **Zygote monitor** — automatically re-injects if zygote64 restarts (e.g. Xiaomi.eu ROM)
 - **Bootloop protection** — disables itself after 3 consecutive failed boots
 - **Multi-user support** — merges certs from all Android users (configurable)
