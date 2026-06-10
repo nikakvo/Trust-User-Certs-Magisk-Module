@@ -4,7 +4,7 @@ All notable changes to Trust User Certs are documented here.
 
 ---
 
-## [v2.5] — 2025
+## v2.5
 
 ### Added
 - **Zygote64-only injection** — 32-bit zygote injection removed. Eliminates unnecessary re-injection noise on 64-bit-only devices where the 32-bit zygote is merely a compatibility shim.
@@ -34,18 +34,3 @@ All notable changes to Trust User Certs are documented here.
 - Mount idempotency — tmpfs is only mounted if not already present, preventing errors on `service.sh` restart.
 
 ---
-
-## [v2.4] — earlier
-
-- Initial public release with APEX/Conscrypt support
-- Legacy `/system/etc/security/cacerts` overlay via Magisk
-- Basic live sync via `inotifyd`
-- Multi-user cert collection
-- Status display in module description
-
----
-
-## [v1.0] — initial
-
-- Basic Magisk overlay for legacy cert path
-- Single-user cert collection at boot
