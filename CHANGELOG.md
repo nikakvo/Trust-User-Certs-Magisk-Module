@@ -2,6 +2,37 @@
 
 All notable changes to Trust User Certs are documented here.
 
+## v2.6 — 2026-06-11
+
+### WebUI
+- **Fixed log viewer showing only 1 line** — `ksu.exec()` in SukiSU-Ultra truncates `stdout` after the first newline; log output is now piped through `base64 -w0` and decoded with `TextDecoder('utf-8')` on the JS side, preserving all lines
+- **Fixed broken characters in log** (`âãœ` artifacts) — `atob()` decodes as Latin-1; replaced with `TextDecoder('utf-8')` over a `Uint8Array` for correct UTF-8 handling (emoji, dashes, etc.)
+- **Fixed log box height** — `max-height` is ignored in KSU WebView when a parent has `overflow: hidden`; changed to a fixed `height: 280px` with `-webkit-overflow-scrolling: touch`
+- **Fixed scroll-to-bottom not working** — replaced single `requestAnimationFrame` with a double `rAF` to guarantee layout is complete before scrolling in Android WebView
+- **Action buttons now show loading state** — spinner ring + color glow appear while an operation is running; label changes to `syncing…` / `injecting…` / `resetting…` and restores on completion via `finally` block (button can no longer get stuck in loading state)
+- **Fixed `writeCfg` silently failing** — `grep -v` returns exit code 1 when no lines match, aborting the pipeline before `mv`; added `|| true` to handle this correctly
+- **Fixed `doAction inject` using `ps -P`** — non-standard flag on AOSP; replaced with direct `/proc` traversal, consistent with the same fix in `service.sh`
+- **Fixed dead variable in `toggleFilter`** — removed unused `const btn` declaration
+- **Header subtitle corrected** — was showing `SukiSU Ultra` only; now shows `Magisk · KSU · SukiSU`
+- **Increased log tail** from 120 to 200 lines
+- **Codebase translated to English** — all comments and UI strings were in Bulgarian; now fully in English for public readability
+
+### service.sh
+- **Removed unreliable `ps -o pid= -P`** — non-standard on AOSP, can return wrong results on some ROMs; replaced with `ps awk` as primary method and `/proc` traversal as fallback
+- **Fixed `[NS:?]` always showing unknown namespace** — `inject_into_pid` now reads `readlink /proc/$pid/ns/mnt` of the target PID instead of the root shell's own namespace
+- **Inject action delegates to `service.sh --force-inject`** — instead of running a slow `/proc` loop with many `exec()` calls from JS; JS loop retained as fallback
+- **Codebase translated to English**
+
+### post-fs-data.sh
+- **Added 24h auto-reset for `boot_fail_count`** — if the fail counter file is older than 24 hours it is automatically reset, preventing a module from staying permanently disabled after an accidental crash
+- **Fixed `mkdir -p -m 777`** (SC2174) — `-m` only applies to the deepest directory when used with `-p`; split into `mkdir -p` + `chmod 777`
+- **Added `shellcheck disable` directives** for Magisk-specific false positives (`SC2034` for `SKIPUNZIP`, `SC1090` for dynamic config source)
+- **Codebase translated to English**
+
+### customize.sh
+- **Fixed version mismatch** — `ui_print` and generated config header were still showing `v2.4` instead of `v2.5`
+- **Codebase translated to English**
+
 ---
 
 ## v2.5
